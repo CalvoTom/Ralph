@@ -4,7 +4,7 @@ import pymysql
 DB_HOST = '192.168.159.132'
 DB_USER = 'app'
 DB_PASSWORD = '1806'
-DB_NAME = 'raplhbdd'
+DB_NAME = 'ralphbdd'
 
 # Seuil pour le score
 THRESHOLD = 10
@@ -30,57 +30,62 @@ def add_page(url, name, title, body):
         conn.close()
 
 def get_word_frequencies(user_input):
-    conn = pymysql.connect(host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_NAME)
+    conn = connect()
     cursor = conn.cursor()
 
     try:
         # Séparer les mots clés de la recherche de l'utilisateur
         keywords = user_input.split()
 
-        # Initialiser un dictionnaire pour stocker la fréquence de chaque mot clé
-        word_freqs = {keyword: 0 for keyword in keywords}
+        # Initialiser un dictionnaire pour stocker le score de chaque page
+        page_scores = {}
 
-        # Récupérer le contenu de chaque page
+        # Récupérer les données de chaque page
         cursor.execute("SELECT id, body FROM PAGES")
         pages = cursor.fetchall()
 
-        # Calculer la fréquence de chaque mot clé dans le corps de chaque page
+        # Calculer le score de chaque page en fonction de la fréquence des mots clés
         for page_id, body in pages:
+            score = 0
             for keyword in keywords:
-                word_freqs[keyword] += body.lower().count(keyword.lower())
+                score += body.lower().count(keyword.lower())
+            page_scores[page_id] = score
 
-        return word_freqs
+        return page_scores
 
     except Exception as e:
-        print("Erreur lors du calcul de la fréquence des mots clés :", e)
+        print("Erreur lors du calcul des scores des pages :", e)
         return {}
 
     finally:
         cursor.close()
         conn.close()
 
-def rank_pages(word_freqs):
-    conn = pymysql.connect(host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_NAME)
+def rank_pages(page_scores):
+    conn = connect()
     cursor = conn.cursor()
 
     try:
         # Récupérer les données de chaque page
-        cursor.execute("SELECT id, url, title, body FROM PAGES")
+        cursor.execute("SELECT url, title, body FROM PAGES")
         pages = cursor.fetchall()
 
-        # Calculer le score de chaque page en fonction de la fréquence des mots clés
-        scored_pages = []
-        for page_id, url, title, body in pages:
-            score = sum(word_freqs.values())
-            scored_pages.append({'id': page_id, 'url': url, 'title': title, 'score': score})
+        ranked_pages = []
+
+        # Pour chaque page, calculer le score et l'ajouter à la liste
+        for url, title, body in pages:
+            total_words = len(body.split())
+            if total_words > 0 and url in page_scores:
+                query_count = page_scores[url]
+                # Calculer le score basé sur le ratio
+                score = total_words / query_count
+                ranked_pages.append((url, title, score))
+                print(rank_pages, "fef")
 
         # Trier les pages par score en ordre décroissant
-        scored_pages.sort(key=lambda x: x['score'], reverse=True)
+        ranked_pages.sort(key=lambda x: x[2], reverse=True)
 
-        # Filtrer les pages avec un score inférieur au seuil
-        scored_pages = [page for page in scored_pages if page['score'] >= THRESHOLD]
-
-        return scored_pages
+        return ranked_pages
 
     except Exception as e:
         print("Erreur lors du classement des pages :", e)

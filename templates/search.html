@@ -1,75 +1,28 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Search</title>
+  <link rel="stylesheet" href="../static/styles.css">
+  <style>
+  </style>
+</head>
+<body>
+  <h1>Search</h1>
 
-    <title>Search</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 20px;
-      }
-      h1, h2 {
-        color: #333;
-      }
-      form {
-        margin-bottom: 20px;
-        display: flex;
-        justify-content: flex-end;
-      }
-      label {
-        display: block;
-        margin-bottom: 5px;
-        flex-grow: 1;
-      }
-      input[type="text"] {
-        width: 100%;
-        padding: 5px;
-      }
-      button[type="submit"] {
-        background-color: #4CAF50;
-        color: white;
-        padding: 5px 10px;
-        border: none;
-        cursor: pointer;
-      }
-      button[type="submit"]:hover {
-        background-color: #45a049;
-      }
-      ul {
-        list-style-type: none;
-        padding: 0;
-      }
-      li {
-        margin-bottom: 5px;
-      }
-      a {
-        color: #0066cc;
-        text-decoration: none;
-      }
-      a:hover {
-        text-decoration: underline;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>Search</h1>
+  <form method="post">
+    <input type="text" id="query" name="query" required style="flex-grow: 2; margin-right: 10px;">
+    <button type="submit">Search</button>
+  </form>
 
-    <form method="post">
-      <input type="text" id="query" name="query" required style="flex-grow: 2; margin-right: 10px;">
-      <button type="submit">Search</button>
-    </form>
-
-    {% if pages %}
-      <h2>Results:</h2>
-      <ul>
-        {% for page in pages %}
-          <li><a href="{{ page[0] }}">{{ page[1] }}</a> (Score: {{ page[2] }})</li>
-        {% endfor %}
-      </ul>
-    {% endif %}
-  </body>
+  {% if pages %}
+    <h2>Results:</h2>
+    <ul>
+      {% for page in pages %}
+        <li><a href="{{ page[0] }}">{{ page[1] }}</a> {% if page[1] %}(Score: {{ page[2] }}){% endif %}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+</body>
 </html>

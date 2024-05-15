@@ -1,5 +1,5 @@
 from flask import Flask, request, render_template
-from api import *
+from python.api import *
 
 app = Flask(__name__)
 
@@ -7,13 +7,13 @@ app = Flask(__name__)
 THRESHOLD = 10
 
 @app.route('/', methods=['GET', 'POST'])
-def search():
+def search_post():
     if request.method == 'POST':
         query = request.form['query']
-        word_freqs = get_word_frequencies()
-        pages = rank_pages(word_freqs)
-        return render_template('index.html', query=query, pages=pages)
-    return render_template('index.html')
+        page_scores = get_word_frequencies(query)
+        ranked_pages = rank_pages(page_scores)
+        return render_template('search.html', query=query, pages=ranked_pages)
+    return render_template('search.html')
 
 if __name__ == "__main__":
     app.run(debug=True)
